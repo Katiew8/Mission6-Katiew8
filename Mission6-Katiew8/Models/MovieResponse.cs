@@ -25,7 +25,7 @@ namespace Mission6_Katiew8.Models
         public string Director { get; set; }
         //rating field with dropdown menu
         [Required]
-        public int Rating { get; set; }
+        public string Rating { get; set; }
         //edited field yes/no (true/false) option - optional
         public bool Edited { get; set; }
         //lent to - optional

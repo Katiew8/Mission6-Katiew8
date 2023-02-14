@@ -12,10 +12,12 @@ namespace Mission6_Katiew8.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private MovieContext blahContext { get; set; }
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, MovieContext someName)
         {
             _logger = logger;
+            blahContext = someName;
         }
 
         public IActionResult Index()
@@ -30,6 +32,8 @@ namespace Mission6_Katiew8.Controllers
         [HttpPost]
         public IActionResult MovieForm(MovieResponse response)
         {
+            blahContext.Add(response);
+            blahContext.SaveChanges();
             return View("Confirmation", response);
         }
 
