@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Mission6_Katiew8.Models;
 using System;
@@ -12,12 +13,11 @@ namespace Mission6_Katiew8.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+
         private MovieContext blahContext { get; set; }
 
-        public HomeController(ILogger<HomeController> logger, MovieContext someName)
+        public HomeController(MovieContext someName)
         {
-            _logger = logger;
             blahContext = someName;
         }
 
@@ -28,14 +28,24 @@ namespace Mission6_Katiew8.Controllers
         [HttpGet]
         public IActionResult FillOutForm()
         {
+            ViewBag.Categories = blahContext.Category.ToList();
             return View("MovieForm");
         }
         [HttpPost]
-        public IActionResult MovieForm(MovieResponse response)
+        public IActionResult FillOutForm(MovieResponse response)
         {
-            blahContext.Add(response);
-            blahContext.SaveChanges();
-            return View("Confirmation", response);
+            if (ModelState.IsValid)
+            {
+                blahContext.Add(response);
+                blahContext.SaveChanges();
+                return View("Confirmation", response);
+            }
+            else
+            {
+                ViewBag.Categories = blahContext.Category.ToList();
+                return View(response);
+            }
+            
         }
 
         public IActionResult Podcast()
@@ -43,15 +53,48 @@ namespace Mission6_Katiew8.Controllers
             return View("Podcast");
         }
 
-        public IActionResult Privacy()
+        [HttpGet]
+        public IActionResult MovieList()
         {
-            return View();
+            var applications = blahContext.Responses
+                .Include(x => x.Category)
+                .OrderBy(x => x.Title)
+                .ToList();
+            return View(applications);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Edit(int applicationid)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            ViewBag.Categories = blahContext.Category.ToList();
+            var application = blahContext.Responses.Single(x => x.MovieId == applicationid);
+            return View("MovieForm", application);
         }
+
+        [HttpPost]
+        public IActionResult Edit(MovieResponse blah)
+        {
+            blahContext.Update(blah);
+            blahContext.SaveChanges();
+
+            return RedirectToAction("MovieList");
+
+        }
+
+        [HttpGet]
+        public IActionResult Delete(int applicationid)
+        {
+            var application = blahContext.Responses.Single(x => x.MovieId == applicationid); 
+            return View("Delete", application);
+        }
+
+        [HttpPost]
+        public IActionResult Delete(MovieResponse blah)
+        {
+            blahContext.Responses.Remove(blah);
+            blahContext.SaveChanges();
+            return RedirectToAction("MovieList");
+        }
+
     }
 }
